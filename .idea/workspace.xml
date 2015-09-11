@@ -37,10 +37,11 @@
       <file leaf-file-name="UprofilerGetSaveRuns.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/UprofilerGetSaveRuns.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6947674">
-              <caret line="159" column="49" selection-start-line="159" selection-start-column="49" selection-end-line="159" selection-end-column="49" />
+            <state vertical-scroll-proportion="0.5857558">
+              <caret line="159" column="4" selection-start-line="159" selection-start-column="4" selection-end-line="159" selection-end-column="4" />
               <folding>
                 <element signature="e#39#71#0#PHP" expanded="true" />
+                <marker date="1442010783000" expanded="true" signature="4907:4979" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -311,6 +312,7 @@
           <caret line="2" column="30" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="30" />
           <folding>
             <element signature="e#39#71#0#PHP" expanded="true" />
+            <marker date="1442010783000" expanded="true" signature="4907:4979" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -393,6 +395,7 @@
           <caret line="45" column="3" selection-start-line="45" selection-start-column="3" selection-end-line="45" selection-end-column="3" />
           <folding>
             <element signature="e#39#71#0#PHP" expanded="true" />
+            <marker date="1442010783000" expanded="true" signature="4907:4979" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -459,6 +462,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#39#71#0#PHP" expanded="true" />
+            <marker date="1442010783000" expanded="true" signature="4907:4979" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -622,10 +626,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/UprofilerGetSaveRuns.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6947674">
-          <caret line="159" column="49" selection-start-line="159" selection-start-column="49" selection-end-line="159" selection-end-column="49" />
+        <state vertical-scroll-proportion="0.5857558">
+          <caret line="159" column="4" selection-start-line="159" selection-start-column="4" selection-end-line="159" selection-end-column="4" />
           <folding>
             <element signature="e#39#71#0#PHP" expanded="true" />
+            <marker date="1442010783000" expanded="true" signature="4907:4979" placeholder="..." />
           </folding>
         </state>
       </provider>

@@ -150,15 +150,20 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
     $response = $client->scan(array(
       'TableName' => $this->tableName
     ));
+    $time_id_array = array();
     echo "<br>";
     echo "The following id's are available:" . "<br>";
     foreach ($response['Items'] as $key => $value) {
-      $id = $value['id']['S'];
-      $brand_name = $value['brand_name']['S'];
-      $time_in_unix = $value['time']['N'];
-      $link_address = "http://localhost:8888/index.php?run=" . $id . "&source=" . $brand_name;
-      echo 'Id: ' . "<a href='$link_address'> $id </a>" . str_repeat('&nbsp;', 20) . 'Brand Name:' . $brand_name . " Date: " . date('m/d/Y H:i:s', $time_in_unix) . "<br>";
+      $time_id_array[$value['time']['N']] =  array("id" => $value['id']['S'], "brand_name" => $value['brand_name']['S']);
     }
+    krsort($time_id_array);
+    
+    foreach($time_id_array as $key => $value) {
+      $link_address = "http://localhost:8888/index.php?run=" . $value['id'] . "&source=" . $value['brand_name'];
+      $id = $value['id'];
+      echo 'Id: ' . "<a href='$link_address'> $id </a>" . "Time: " . "Brand Name: " . $value['brand_name'] . date('m/d/Y H:i:s', $key). "<br>";
+    }
+
     echo "---------------\n".
       "Assuming you have set up the http based UI for \n".
       "uprofiler at some address, you can view run at \n".
