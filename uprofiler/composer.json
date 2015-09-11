@@ -1,0 +1,17 @@
+{
+    "name": "friendsofphp/uprofiler",
+    "type": "library",
+    "description": "uprofiler: A lightweight profiler for PHP",
+    "keywords": ["profiling", "performance"],
+    "homepage": "http://github.com/FriendsOfPHP/uprofiler",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=5.2.0"
+    },
+    "autoload": {
+        "files": [
+            "uprofiler_lib/utils/uprofiler_lib.php",
+            "uprofiler_lib/utils/uprofiler_runs.php"
+        ]
+    }
+}
