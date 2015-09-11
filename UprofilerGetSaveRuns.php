@@ -11,9 +11,9 @@ include(dirname(__FILE__) . "/uprofiler/uprofiler_lib/utils/uprofiler_runs.php")
 
 class UprofilerGetSaveRuns implements \iUprofilerRuns {
 
-  private $tableName = 'pc2';
+  private $tableName = 'pc5';
   private $bucketName = 'pubcentral';
-  public function __construct($tableName = "pc2", $bucketName = "pubcentral") {
+  public function __construct($tableName = "pc5", $bucketName = "pubcentral") {
     $this->tableName = $tableName;
     $this->bucketName = $bucketName;
   }
@@ -82,9 +82,9 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
       )
     ));
 
-//    $client->waitUntil('TableExists', array(
-//      'TableName' => $this->tableName
-//    ));
+    $client->waitUntil('TableExists', array(
+      'TableName' => $this->tableName
+    ));
   }
 
   private function createAmazonS3Bucket($client) {
@@ -98,7 +98,8 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
       'TableName' => $this->tableName,
       'Item' => array(
         'id' => array('S' => $id),
-        'brand_name' => array('S' => $brand_name)
+        'brand_name' => array('S' => $brand_name),
+        'time' => array('N' => time())
       )
     ));
   }
@@ -114,19 +115,10 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
   public function get_run($run_id, $type = null, &$run_desc = null) {
 
     $s3client = $this->getAmazonS3Client();
-//    $result = $client->getItem(array(
-//      'ConsistentRead' => true,
-//      'TableName' => $this->tableName,
-//      'Key'       => array(
-//        'id'   => array('S' => $run_id)
-//      )
-//    ));
     $result = $s3client->getObject(array(
       'Bucket' => $this->bucketName,
       'Key'    => "uprofiler/" . $run_id . ".txt"
     ));
-    //echo $result['Item']['id']['S'] . "\n";
-    //echo $result['Item']['uprofiler_data']['S'];
     return unserialize($result['Body']);
   }
 
@@ -161,7 +153,7 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
     echo "<br>";
     echo "The following id's are available:" . "<br>";
     foreach ($response['Items'] as $key => $value) {
-      echo 'Id: ' . $value['id']['S'] . str_repeat('&nbsp;', 20) . 'Brand Name:' . $value['brand_name']['S'] . "<br>";
+      echo 'Id: ' . $value['id']['S'] . str_repeat('&nbsp;', 20) . 'Brand Name:' . $value['brand_name']['S'] . " Date: " . date('m/d/Y H:i:s', $value['time']['N']) . "<br>";
     }
     echo "---------------\n".
       "Assuming you have set up the http based UI for \n".
