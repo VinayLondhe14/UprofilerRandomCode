@@ -153,7 +153,11 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
     echo "<br>";
     echo "The following id's are available:" . "<br>";
     foreach ($response['Items'] as $key => $value) {
-      echo 'Id: ' . $value['id']['S'] . str_repeat('&nbsp;', 20) . 'Brand Name:' . $value['brand_name']['S'] . " Date: " . date('m/d/Y H:i:s', $value['time']['N']) . "<br>";
+      $id = $value['id']['S'];
+      $brand_name = $value['brand_name']['S'];
+      $time_in_unix = $value['time']['N'];
+      $link_address = "http://localhost:8888/index.php?run=" . $id . "&source=" . $brand_name;
+      echo 'Id: ' . "<a href='$link_address'> $id </a>" . str_repeat('&nbsp;', 20) . 'Brand Name:' . $brand_name . " Date: " . date('m/d/Y H:i:s', $time_in_unix) . "<br>";
     }
     echo "---------------\n".
       "Assuming you have set up the http based UI for \n".
