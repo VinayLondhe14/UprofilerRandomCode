@@ -121,6 +121,7 @@ foo();
 // stop profiler
 $uprofiler_data = uprofiler_disable();
 $uprofiler_runs = new UprofilerGetSaveRuns();
+//$uprofiler_runs->deleteTable();
 $run_id = $uprofiler_runs->save_run($uprofiler_data, "brand_name");
 
 echo "---------------\n".

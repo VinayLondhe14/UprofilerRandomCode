@@ -11,11 +11,23 @@ include(dirname(__FILE__) . "/uprofiler/uprofiler_lib/utils/uprofiler_runs.php")
 
 class UprofilerGetSaveRuns implements \iUprofilerRuns {
 
-  private $tableName = 'pc5';
+  private $tableName = 'pc30';
   private $bucketName = 'pubcentral';
-  public function __construct($tableName = "pc5", $bucketName = "pubcentral") {
+  public function __construct($tableName = "pc30", $bucketName = "pubcentral") {
     $this->tableName = $tableName;
     $this->bucketName = $bucketName;
+  }
+
+  public function deleteTable() {
+    $client = $this->getDynamoDbClient();
+    $client->deleteTable(array(
+      'TableName' => $this->tableName
+    ));
+
+    $client->waitUntil('TableNotExists', array(
+      'TableName' => $this->tableName
+    ));
+    echo "Table deleted";
   }
 
   private function gen_run_id($type) {
@@ -66,14 +78,22 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
       'TableName' => $this->tableName,
       'AttributeDefinitions' => array(
         array(
-          'AttributeName' => 'id',
-          'AttributeType' => 'S'
+          'AttributeName' => 'constant_hash',
+          'AttributeType' => 'N'
+        ),
+        array(
+          'AttributeName' => 'time',
+          'AttributeType' => 'N'
         )
       ),
       'KeySchema' => array(
         array(
-          'AttributeName' => 'id',
+          'AttributeName' => 'constant_hash',
           'KeyType'       => 'HASH'
+        ),
+        array(
+          'AttributeName' => 'time',
+          'KeyType'       => 'RANGE'
         )
       ),
       'ProvisionedThroughput' => array(
@@ -97,27 +117,45 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
     $result = $client->putItem(array(
       'TableName' => $this->tableName,
       'Item' => array(
+        'constant_hash' => array('N' => '1'),
+        'time' => array('N' => time()),
         'id' => array('S' => $id),
         'brand_name' => array('S' => $brand_name),
-        'time' => array('N' => time())
       )
     ));
   }
 
   private function putObjectInAmazonS3($client, $id, $uprofiler_data) {
-    $result = $client->putObject(array(
+    $ddbclient = $this->getDynamoDbClient();
+    $year_month_array = $this->getYearAndMonthForRunId($ddbclient, $id);
+      $result = $client->putObject(array(
       'Bucket' => $this->bucketName,
-      'Key'    => "uprofiler/" . $id . ".txt",
+        'Key'    => "uprofiler/" . $year_month_array[0] . "/" . $year_month_array[1] . "/" . $id . ".txt",
       'Body'   => serialize($uprofiler_data)
     ));
   }
 
-  public function get_run($run_id, $type = null, &$run_desc = null) {
+  private function getYearAndMonthForRunId($ddbclient, $id) {
+    $ddb_query_result = $ddbclient->scan(array(
+      'TableName' => $this->tableName,
+      'ExpressionAttributeValues' =>  array (
+        ':val1' => array('S' => $id)) ,
+      'FilterExpression' => 'id = :val1'
+    ));
+    foreach($ddb_query_result['Items'] as $key => $value) {
+      $year = date('Y', $value['time']['N']);
+      $month = date('M', $value['time']['N']);
+    }
+    return array($year, $month);
+  }
 
+  public function get_run($run_id, $type = null, &$run_desc = null) {
+    $ddbclient = $this->getDynamoDbClient();
+    $year_month_array = $this->getYearAndMonthForRunId($ddbclient, $run_id);
     $s3client = $this->getAmazonS3Client();
     $result = $s3client->getObject(array(
       'Bucket' => $this->bucketName,
-      'Key'    => "uprofiler/" . $run_id . ".txt"
+      'Key'    => "uprofiler/" . $year_month_array[0] . "/" . $year_month_array[1] . "/" . $run_id . ".txt",
     ));
     return unserialize($result['Body']);
   }
@@ -145,29 +183,29 @@ class UprofilerGetSaveRuns implements \iUprofilerRuns {
 
 
   public function list_runs() {
+    try {
+      $client = $this->getDynamoDbClient();
+      $result = $client->query(array(
+        'TableName' => $this->tableName,
+        'KeyConditions' => array(
+          'constant_hash' => array(
+            'AttributeValueList' => array(
+              array('N' => 1)
+            ),
+            'ComparisonOperator' => 'EQ'
+          )
+        ),
+        'ScanIndexForward' => FALSE,
+        'Limit' => 10,
+      ));
 
-    $client = $this->getDynamoDbClient();
-    $response = $client->scan(array(
-      'TableName' => $this->tableName
-    ));
-    $time_id_array = array();
-    echo "<br>";
-    echo "The following id's are available:" . "<br>";
-    foreach ($response['Items'] as $key => $value) {
-      $time_id_array[$value['time']['N']] =  array("id" => $value['id']['S'], "brand_name" => $value['brand_name']['S']);
+      foreach ($result['Items'] as $key => $value) {
+        $id = $value['id']['S'];
+        $link_address = "http://localhost:8888/index.php?run=" . $id . "&source=" . $value['brand_name']['S'];
+        echo 'Id: ' . "<a href='$link_address'> $id </a>" . "Brand Name: " . $value['brand_name']['S'] . "<br>";
+      }
+    } catch(\Exception $e) {
+        echo "No profiler runs found";
     }
-    krsort($time_id_array);
-    
-    foreach($time_id_array as $key => $value) {
-      $link_address = "http://localhost:8888/index.php?run=" . $value['id'] . "&source=" . $value['brand_name'];
-      $id = $value['id'];
-      echo 'Id: ' . "<a href='$link_address'> $id </a>" . "Time: " . "Brand Name: " . $value['brand_name'] . date('m/d/Y H:i:s', $key). "<br>";
-    }
-
-    echo "---------------\n".
-      "Assuming you have set up the http based UI for \n".
-      "uprofiler at some address, you can view run at \n".
-      "http://<uprofiler-ui-address>/index.php?run=Id&source=brand_name\n".
-      "---------------\n";
   }
 }
